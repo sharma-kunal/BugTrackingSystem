@@ -74,6 +74,8 @@ class Login(APIView):
                     Token.objects.create(user=user)
                 return Response({
                     'username': user.username,
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
                     'email': email
                 }, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -159,7 +161,11 @@ class UserProjects(APIView):
             # change this default Admin value for all users
             relation.user_role = {v: k for k, v in ProjectUserRelation.ROLE_CHOICES}.get('Admin')
             relation.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({
+                'id': project.id,
+                'name': project.name,
+                'description': project.description
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -199,6 +205,16 @@ class UserProjectID(APIView):
                 return Response({}, status=status.HTTP_403_FORBIDDEN)
             elif isadmin == 204:
                 return Response({}, status=status.HTTP_204_NO_CONTENT)
+
+            # checking if request.data has COMPULSORY Parameters or not
+            _mutable_flag = request.data._mutable
+            request.data._mutable = True
+            if 'name' not in request.data:
+                request.data['name'] = project.name
+            if 'description' not in request.data:
+                request.data['description'] = project.description
+            request.data._mutable = _mutable_flag
+
             serializer = ProjectSerializer(project, request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -428,22 +444,30 @@ class ListTicketView(APIView):
                 new_assigned_developer_object = None
                 try:
                     # developer to be assigned
-                    developer_to_be_assigned = data.get('user', None)
+                    developer_to_be_assigned = data.get('users', None)
 
                     # checking if there was any other developer assigned to the ticket already
                     # If assigned, then removing the Project-User Relation from the UserProject Table
                     old_developer = ticket.users
                     if old_developer:
-                        # first remove relation of this old developer
-                        try:
-                            relation = ProjectUserRelation.objects.get(user_id=old_developer.id, project_id=project_id)
-                            if relation.user_role != "Admin":
-                                relation.delete()
-                        except ProjectUserRelation.DoesNotExist:
-                            pass
+                        # first check count of tickets of old_developer in this project
+                        # if count of tickets of old_developer >= 2
+                            # don't delete the Project-User Relation
+                        # elif count of ticktes of old_developer == 1
+                            # delete the Project-User Relation if the User is not Admin
+
+                        count = Tickets.objects.filter(users=old_developer.id).count()
+                        if count == 1:
+                            # remove relation of this old developer
+                            try:
+                                relation = ProjectUserRelation.objects.get(user_id=old_developer.id, project_id=project_id)
+                                if relation.user_role != "Admin":
+                                    relation.delete()
+                            except ProjectUserRelation.DoesNotExist:
+                                pass
 
                     # now checking if developer_to_be_assigned is a valid User
-                    if developer_to_be_assigned and developer_to_be_assigned != "null":
+                    if developer_to_be_assigned:
                         new_assigned_developer_object = User.objects.get(id=developer_to_be_assigned)
 
                         # create a relation for the user and project as Developer
@@ -463,8 +487,8 @@ class ListTicketView(APIView):
                     'priority': ticket.priority,
                     'status': ticket.status,
                     'type': ticket.type,
-                    'createddate': ticket.CreatedDate,
-                    'user': ticket.users.id if ticket.users is not None else None
+                    'CreatedDate': ticket.CreatedDate,
+                    'users': ticket.users.id if ticket.users is not None else None
                 }
                 return Response(response, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
