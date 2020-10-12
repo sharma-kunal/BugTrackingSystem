@@ -31,8 +31,10 @@
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
               if(xhttp.readyState == 4 && xhttp.status == 201) {
-                  console.log(xhttp.responseText);
-              } console.log('sent');
+                  alert("Thank You for reporting the Error");
+              } else {
+                alert("An Error Occurred");
+              }
             }
             xhttp.open("POST", url, true);
             xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
