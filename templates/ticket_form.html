@@ -27,7 +27,7 @@
             console.log(title);
             console.log(description);
             console.log(project_id);
-            url = 'http://127.0.0.1:8080/api/user/project/' + project_id + '/ticket/';
+            url = 'https://bug-tracker01.herokuapp.com/api/user/project/' + project_id + '/ticket/';
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
               if(xhttp.readyState == 4 && xhttp.status == 201) {
