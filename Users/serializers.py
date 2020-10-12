@@ -32,7 +32,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Projects
-        fields = ['id', 'name', 'description']
+        fields = ['id', 'name', 'description', 'ticket_form_key']
 
 
 class TicketSerializer(serializers.ModelSerializer):

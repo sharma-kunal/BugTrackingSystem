@@ -18,6 +18,7 @@ class Projects(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200)
     description = models.TextField(max_length=1000)
+    ticket_form_key = models.CharField(max_length=50, null=True, blank=True)
     project_users = models.ManyToManyField(User, through='ProjectUserRelation')
 
     def __str__(self):

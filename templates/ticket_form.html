@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <title>Report Error</title>
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+          <h1 style="text-align:center">Report Error</h1>
+        </div>
+        <form>
+            <input id='issue_title' class="form-control" type="text" placeholder="Issue Title">
+            <div class="form-group">
+                <br>
+                <textarea class="form-control" id="issue_description" rows="3" placeholder="Issue Description"></textarea>
+            </div>
+        </form>
+        <button type="button" class="btn btn-danger" onclick="openTicket({{ project_id }})">Submit</button>
+    </div>
+</body>
+<script>
+        function openTicket(project_id) {
+            title = document.getElementById('issue_title').value;
+            description = document.getElementById('issue_description').value;
+            console.log(title);
+            console.log(description);
+            console.log(project_id);
+            url = 'http://127.0.0.1:8080/api/user/project/' + project_id + '/ticket/';
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+              if(xhttp.readyState == 4 && xhttp.status == 201) {
+                  console.log(xhttp.responseText);
+              } console.log('sent');
+            }
+            xhttp.open("POST", url, true);
+            xhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhttp.send(`title=${title}&description=${description}`);
+        }
+    </script>
+</html>

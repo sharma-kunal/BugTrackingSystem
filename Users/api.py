@@ -8,6 +8,7 @@ from rest_framework.exceptions import APIException, PermissionDenied, NotFound
 from rest_framework.authentication import BasicAuthentication, TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
+from uuid import uuid4
 
 
 TICKETS_SORTED_BY = {
@@ -155,7 +156,8 @@ class UserProjects(APIView):
         # checking if project data is valid
         serializer = ProjectSerializer(data=request.data)
         if serializer.is_valid():
-            project = Projects.objects.create(name=serializer.data['name'], description=serializer.data['description'])
+            project = Projects.objects.create(name=serializer.data['name'], description=serializer.data['description'],
+                                              ticket_form_key=uuid4().hex[:10])
             project.project_users.add(request.user)
             relation = ProjectUserRelation.objects.get(user_id=user_id, project_id=project.id)
             # change this default Admin value for all users
@@ -164,7 +166,8 @@ class UserProjects(APIView):
             return Response({
                 'id': project.id,
                 'name': project.name,
-                'description': project.description
+                'description': project.description,
+                'ticket_form_key': project.ticket_form_key
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
