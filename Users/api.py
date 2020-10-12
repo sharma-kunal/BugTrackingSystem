@@ -50,6 +50,13 @@ def isAdmin(user_id, project_id):
 
 class SignUP(APIView):
     def post(self, request):
+
+        # set username to be a random 30 digit id
+        _mutableflag = request.data._mutable
+        request.data._mutable = True
+        request.data['username'] = uuid4().hex[:30]
+        request.data._mutable = _mutableflag
+
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()

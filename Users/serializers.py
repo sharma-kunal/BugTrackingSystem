@@ -2,11 +2,10 @@ from rest_framework import serializers
 from .models import Projects, Tickets
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-import uuid
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(max_length=200, default=uuid.uuid4().hex[:30])
+    username = serializers.CharField(max_length=200)
     password = serializers.CharField(max_length=100, write_only=True)
     email = serializers.EmailField(max_length=255)
     first_name = serializers.CharField(max_length=255)
